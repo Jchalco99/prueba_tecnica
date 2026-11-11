@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Modelo de los Equipos Mineros
+model Equipo {
+  id              Int             @id @default(autoincrement())
+  codigo          String          @unique
+  tipo            TipoEquipo
+  horometro       Int             @default(0)
+  mantenimientos  Mantenimiento[]
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+// Historial de mantenimientos
+model Mantenimiento {
+  id              Int      @id @default(autoincrement())
+  equipoId        Int
+  equipo          Equipo   @relation(fields: [equipoId], references: [id], onDelete: Cascade)
+  fecha           DateTime @default(now())
+  horometroActual Int
+}
+
+enum TipoEquipo {
+  CAMION
+  EXCAVADORA
+  PERFORADORA
+}

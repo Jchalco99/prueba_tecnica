@@ -1,0 +1,22 @@
+# Documentación / notas locales
+docs/
+
+# Skills y configuración local de asistentes IA
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+
+# Variables de entorno locales
+.env
+.env*.local
+!.env.example
+
+# Logs
+*.log
+
+# Sistema y editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
