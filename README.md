@@ -59,7 +59,7 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 - [x] Configuración de Prisma 7 y migración inicial (`Equipo`, `Mantenimiento`, `TipoEquipo`)
 - [x] Estructura Clean Architecture en Backend y Feature-Sliced Design en Frontend
 - [x] Implementación completa de endpoints REST y lógica de mantenimiento en Backend
-- [ ] Implementación de la interfaz en Frontend (React + TypeScript)
+- [x] Implementación de la interfaz en Frontend (React + TypeScript + shadcn/ui + TailwindCSS)
 - [ ] Script de automatización de despliegue (`deploy.sh`)
 
 ## Cómo ejecutar localmente
