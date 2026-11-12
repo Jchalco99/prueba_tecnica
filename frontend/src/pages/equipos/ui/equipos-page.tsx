@@ -1,14 +1,13 @@
+import { Moon, Sun } from 'lucide-react';
 import * as React from 'react';
-import { equiposApi } from '../../../entities/equipo/api/equipos.api';
+import { equiposApi } from '@/entities/equipo/api/equipos.api';
 import type {
   CreateEquipoInput,
   Equipo,
   UpdateEquipoInput,
-} from '../../../entities/equipo/model/types';
-import { API_BASE_URL } from '../../../shared/config/env';
-import { Badge } from '../../../shared/ui/badge';
-import { Button } from '../../../shared/ui/button';
-import { EquiposPanel } from '../../../widgets/equipos-panel/ui/equipos-panel';
+} from '@/entities/equipo/model/types';
+import { Button } from '@/shared/ui/button';
+import { EquiposPanel } from '@/widgets/equipos-panel/ui/equipos-panel';
 
 interface EquiposPageProps {
   darkMode: boolean;
@@ -23,6 +22,37 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
     type: 'ok' | 'error';
     text: string;
   } | null>(null);
+  const [feedbackKey, setFeedbackKey] = React.useState(0);
+  const [recentlyCreatedId, setRecentlyCreatedId] = React.useState<number | null>(
+    null,
+  );
+  const [recentlyMaintainedId, setRecentlyMaintainedId] = React.useState<
+    number | null
+  >(null);
+
+  const showFeedback = React.useCallback(
+    (next: { type: 'ok' | 'error'; text: string }) => {
+      setFeedback(next);
+      setFeedbackKey((prev) => prev + 1);
+    },
+    [],
+  );
+
+  React.useEffect(() => {
+    if (recentlyCreatedId === null) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setRecentlyCreatedId(null), 1500);
+    return () => window.clearTimeout(timer);
+  }, [recentlyCreatedId]);
+
+  React.useEffect(() => {
+    if (recentlyMaintainedId === null) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => setRecentlyMaintainedId(null), 1600);
+    return () => window.clearTimeout(timer);
+  }, [recentlyMaintainedId]);
 
   const loadEquipos = React.useCallback(async () => {
     setLoading(true);
@@ -73,7 +103,8 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
   const handleCreate = async (input: CreateEquipoInput) => {
     const creado = await equiposApi.create(input);
     setEquipos((prev) => [...prev, creado]);
-    setFeedback({
+    setRecentlyCreatedId(creado.id);
+    showFeedback({
       type: 'ok',
       text: `Equipo ${creado.codigo} registrado correctamente con horómetro en ${creado.horometro} h.`,
     });
@@ -84,7 +115,7 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
     setEquipos((prev) =>
       prev.map((item) => (item.id === id ? actualizado : item)),
     );
-    setFeedback({
+    showFeedback({
       type: 'ok',
       text: `Equipo ${actualizado.codigo} actualizado (horómetro: ${actualizado.horometro} h).`,
     });
@@ -94,12 +125,12 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
     try {
       await equiposApi.remove(equipo.id);
       setEquipos((prev) => prev.filter((item) => item.id !== equipo.id));
-      setFeedback({
+      showFeedback({
         type: 'ok',
         text: `Equipo ${equipo.codigo} eliminado del registro.`,
       });
     } catch (err) {
-      setFeedback({
+      showFeedback({
         type: 'error',
         text:
           err instanceof Error
@@ -115,55 +146,38 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
       setEquipos((prev) =>
         prev.map((item) => (item.id === equipoId ? resultado.equipo : item)),
       );
-      setFeedback({
+      setRecentlyMaintainedId(equipoId);
+      showFeedback({
         type: 'ok',
         text: `Mantenimiento registrado para ${resultado.equipo.codigo} a las ${resultado.mantenimiento.horometroActual} h. Ciclo preventivo reiniciado.`,
       });
     } catch (err) {
-      setFeedback({
+      const message =
+        err instanceof Error
+          ? err.message
+          : 'No se pudo registrar el mantenimiento.';
+      showFeedback({
         type: 'error',
-        text:
-          err instanceof Error
-            ? err.message
-            : 'No se pudo registrar el mantenimiento.',
+        text: message,
       });
+      throw err;
     }
   };
 
   return (
-    <div className="min-h-dvh flex flex-col bg-[var(--bg-page)] text-[var(--text-primary)]">
-      <header className="border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3.5 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center gap-3">
-            <h1 className="text-xl font-bold tracking-tight text-[var(--text-primary)] sm:text-2xl">
-              Control de Flota Minera
-            </h1>
-            <Badge variant="accent">API: {API_BASE_URL}</Badge>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={onToggleDarkMode}
-              aria-pressed={darkMode}
-            >
-              {darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-            </Button>
-          </div>
-        </div>
-      </header>
-
+    <div className="flex min-h-dvh flex-col bg-background text-foreground">
       <main
         id="contenido-principal"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8"
+        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
       >
         <EquiposPanel
           equipos={equipos}
           loading={loading}
           error={error}
           feedback={feedback}
+          feedbackKey={feedbackKey}
+          recentlyCreatedId={recentlyCreatedId}
+          recentlyMaintainedId={recentlyMaintainedId}
           onRetry={loadEquipos}
           onCreate={handleCreate}
           onUpdate={handleUpdate}
@@ -172,16 +186,22 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
         />
       </main>
 
-      <footer className="border-t border-[var(--border-subtle)] bg-[var(--bg-surface)]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-1 px-4 py-4 text-xs text-[var(--text-secondary)] sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>
-            Sistema de registro de horómetro y mantenimiento preventivo de equipos mineros.
-          </p>
-          <p className="font-mono">
-            Umbrales: CAMION 500 h | EXCAVADORA 250 h | PERFORADORA 100 h
-          </p>
-        </div>
-      </footer>
+      <Button
+        type="button"
+        variant="outline"
+        size="icon"
+        onClick={onToggleDarkMode}
+        aria-pressed={darkMode}
+        aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
+        className="fixed right-5 bottom-5 z-40 size-10 rounded-full bg-card shadow-md"
+      >
+        {darkMode ? (
+          <Sun className="size-4" aria-hidden="true" />
+        ) : (
+          <Moon className="size-4" aria-hidden="true" />
+        )}
+      </Button>
     </div>
   );
 }

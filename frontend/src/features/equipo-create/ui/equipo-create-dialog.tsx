@@ -1,3 +1,4 @@
+import { AlertCircle, Plus } from 'lucide-react';
 import * as React from 'react';
 import {
   type CreateEquipoInput,
@@ -5,19 +6,26 @@ import {
   TIPO_EQUIPO_LABEL,
   TIPOS_EQUIPO,
   type TipoEquipo,
-} from '../../../entities/equipo/model/types';
-import { Button } from '../../../shared/ui/button';
+} from '@/entities/equipo/model/types';
+import { Alert, AlertDescription } from '@/shared/ui/alert';
+import { Button } from '@/shared/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../shared/ui/dialog';
-import { Input } from '../../../shared/ui/input';
-import { Label } from '../../../shared/ui/label';
+} from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 
 interface EquipoCreateDialogProps {
   onCreate: (input: CreateEquipoInput) => Promise<void>;
@@ -26,7 +34,7 @@ interface EquipoCreateDialogProps {
 
 export function EquipoCreateDialog({
   onCreate,
-  triggerLabel = 'Registrar equipo',
+  triggerLabel = 'Nuevo equipo',
 }: EquipoCreateDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [codigo, setCodigo] = React.useState('');
@@ -88,24 +96,27 @@ export function EquipoCreateDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default">{triggerLabel}</Button>
+        <Button variant="default">
+          <Plus aria-hidden="true" />
+          <span>{triggerLabel}</span>
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Registrar nuevo equipo minero</DialogTitle>
-          <DialogDescription>
-            Ingresa el código de unidad, su tipo y la lectura inicial del horómetro en horas.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
           {error && (
-            <div
-              role="alert"
-              className="rounded-md border border-[var(--alert-border)] bg-[var(--alert-bg)] px-3.5 py-2.5 text-sm font-medium text-[var(--alert-fg)]"
+            <Alert
+              variant="destructive"
+              className="border-alert-border bg-alert-surface text-alert-foreground"
             >
-              {error}
-            </div>
+              <AlertCircle aria-hidden="true" />
+              <AlertDescription className="text-alert-foreground">
+                {error}
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="grid gap-2">
@@ -123,19 +134,21 @@ export function EquipoCreateDialog({
 
           <div className="grid gap-2">
             <Label htmlFor="create-equipo-tipo">Tipo de maquinaria</Label>
-            <select
-              id="create-equipo-tipo"
-              name="tipo"
+            <Select
               value={tipo}
-              onChange={(e) => setTipo(e.target.value as TipoEquipo)}
-              className="flex min-h-11 w-full rounded-md border border-[var(--border-control)] bg-[var(--bg-surface)] px-3.5 py-2 text-sm text-[var(--text-primary)]"
+              onValueChange={(value) => setTipo(value as TipoEquipo)}
             >
-              {TIPOS_EQUIPO.map((item) => (
-                <option key={item} value={item}>
-                  {TIPO_EQUIPO_LABEL[item]} (mantenimiento cada {INTERVALO_POR_TIPO[item]} h)
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id="create-equipo-tipo" className="w-full">
+                <SelectValue placeholder="Selecciona un tipo de equipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS_EQUIPO.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {TIPO_EQUIPO_LABEL[item]} (mantenimiento cada {INTERVALO_POR_TIPO[item]} h)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-2">
@@ -151,9 +164,9 @@ export function EquipoCreateDialog({
               onChange={(e) => setHorometro(e.target.value)}
               required
             />
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-muted-foreground">
               Umbral preventivo para {TIPO_EQUIPO_LABEL[tipo].toLowerCase()}:{' '}
-              <span className="font-mono font-semibold text-[var(--text-primary)]">
+              <span className="font-mono font-semibold text-foreground">
                 {INTERVALO_POR_TIPO[tipo]} h
               </span>
               .
@@ -170,7 +183,7 @@ export function EquipoCreateDialog({
               Cancelar
             </Button>
             <Button type="submit" variant="default" disabled={submitting}>
-              {submitting ? 'Guardando registro...' : 'Guardar equipo'}
+              {submitting ? 'Guardando...' : 'Guardar equipo'}
             </Button>
           </DialogFooter>
         </form>

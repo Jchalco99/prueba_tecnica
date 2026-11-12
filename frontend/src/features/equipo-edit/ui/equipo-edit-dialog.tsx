@@ -1,3 +1,4 @@
+import { AlertCircle, Pencil } from 'lucide-react';
 import * as React from 'react';
 import {
   type Equipo,
@@ -7,26 +8,38 @@ import {
   TIPOS_EQUIPO,
   type TipoEquipo,
   type UpdateEquipoInput,
-} from '../../../entities/equipo/model/types';
-import { Button } from '../../../shared/ui/button';
+} from '@/entities/equipo/model/types';
+import { Alert, AlertDescription } from '@/shared/ui/alert';
+import { Button } from '@/shared/ui/button';
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from '../../../shared/ui/dialog';
-import { Input } from '../../../shared/ui/input';
-import { Label } from '../../../shared/ui/label';
+} from '@/shared/ui/dialog';
+import { Input } from '@/shared/ui/input';
+import { Label } from '@/shared/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/shared/ui/select';
 
 interface EquipoEditDialogProps {
   equipo: Equipo;
   onUpdate: (id: number, input: UpdateEquipoInput) => Promise<void>;
+  compact?: boolean;
 }
 
-export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
+export function EquipoEditDialog({
+  equipo,
+  onUpdate,
+  compact = false,
+}: EquipoEditDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [codigo, setCodigo] = React.useState(equipo.codigo);
   const [tipo, setTipo] = React.useState<TipoEquipo>(equipo.tipo);
@@ -90,26 +103,39 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Editar / Horómetro
-        </Button>
+        {compact ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="text-muted-foreground hover:text-foreground"
+            aria-label={`Editar ${equipo.codigo}`}
+            title="Editar / Horómetro"
+          >
+            <Pencil aria-hidden="true" />
+          </Button>
+        ) : (
+          <Button variant="outline" size="sm" aria-label={`Editar ${equipo.codigo}`}>
+            <Pencil aria-hidden="true" />
+            <span>Editar</span>
+          </Button>
+        )}
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Actualizar equipo {equipo.codigo}</DialogTitle>
-          <DialogDescription>
-            Ajusta la lectura del horómetro o modifica los datos de registro de la unidad.
-          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="grid gap-4" noValidate>
           {error && (
-            <div
-              role="alert"
-              className="rounded-md border border-[var(--alert-border)] bg-[var(--alert-bg)] px-3.5 py-2.5 text-sm font-medium text-[var(--alert-fg)]"
+            <Alert
+              variant="destructive"
+              className="border-alert-border bg-alert-surface text-alert-foreground"
             >
-              {error}
-            </div>
+              <AlertCircle aria-hidden="true" />
+              <AlertDescription className="text-alert-foreground">
+                {error}
+              </AlertDescription>
+            </Alert>
           )}
 
           <div className="grid gap-2">
@@ -125,19 +151,21 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
 
           <div className="grid gap-2">
             <Label htmlFor={`edit-tipo-${equipo.id}`}>Tipo de maquinaria</Label>
-            <select
-              id={`edit-tipo-${equipo.id}`}
-              name="tipo"
+            <Select
               value={tipo}
-              onChange={(e) => setTipo(e.target.value as TipoEquipo)}
-              className="flex min-h-11 w-full rounded-md border border-[var(--border-control)] bg-[var(--bg-surface)] px-3.5 py-2 text-sm text-[var(--text-primary)]"
+              onValueChange={(value) => setTipo(value as TipoEquipo)}
             >
-              {TIPOS_EQUIPO.map((item) => (
-                <option key={item} value={item}>
-                  {TIPO_EQUIPO_LABEL[item]} (cada {INTERVALO_POR_TIPO[item]} h)
-                </option>
-              ))}
-            </select>
+              <SelectTrigger id={`edit-tipo-${equipo.id}`} className="w-full">
+                <SelectValue placeholder="Selecciona un tipo de equipo" />
+              </SelectTrigger>
+              <SelectContent>
+                {TIPOS_EQUIPO.map((item) => (
+                  <SelectItem key={item} value={item}>
+                    {TIPO_EQUIPO_LABEL[item]} (cada {INTERVALO_POR_TIPO[item]} h)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="grid gap-2">
@@ -155,13 +183,13 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
               required
             />
             <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-xs text-[var(--text-secondary)]">
+              <span className="text-xs text-muted-foreground">
                 Sumar horas de turno:
               </span>
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="xs"
                 onClick={() => addHoras(50)}
               >
                 +50 h
@@ -169,7 +197,7 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="xs"
                 onClick={() => addHoras(100)}
               >
                 +100 h
@@ -177,19 +205,19 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
               <Button
                 type="button"
                 variant="outline"
-                size="sm"
+                size="xs"
                 onClick={() => addHoras(250)}
               >
                 +250 h
               </Button>
             </div>
-            <p className="text-xs text-[var(--text-secondary)]">
+            <p className="text-xs text-muted-foreground">
               Último mantenimiento registrado a las{' '}
-              <span className="font-mono font-semibold text-[var(--text-primary)]">
+              <span className="font-mono font-semibold text-foreground">
                 {ciclo.ultimoHorometro} h
               </span>
               . Próximo mantenimiento preventivo a las{' '}
-              <span className="font-mono font-semibold text-[var(--text-primary)]">
+              <span className="font-mono font-semibold text-foreground">
                 {ciclo.ultimoHorometro + INTERVALO_POR_TIPO[tipo]} h
               </span>
               .
@@ -206,7 +234,7 @@ export function EquipoEditDialog({ equipo, onUpdate }: EquipoEditDialogProps) {
               Cancelar
             </Button>
             <Button type="submit" variant="default" disabled={submitting}>
-              {submitting ? 'Guardando cambios...' : 'Guardar cambios'}
+              {submitting ? 'Guardando...' : 'Guardar cambios'}
             </Button>
           </DialogFooter>
         </form>
