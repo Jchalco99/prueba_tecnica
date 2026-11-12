@@ -54,13 +54,19 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 | `DELETE` | `/equipos/:id` | Elimina un equipo y su historial en cascada |
 | `POST` | `/equipos/:id/mantenimientos` | Registra mantenimiento (toma `horometroActual` del body o el `horometro` actual del equipo) |
 
+## URLs Públicas
+
+- **Frontend (Vercel):** https://reto-mineros-frontend.vercel.app
+- **Backend (Fly.io):** https://backend-frosty-haze-832.fly.dev
+- **Health Check:** https://backend-frosty-haze-832.fly.dev/health
+
 ## Estado de Avance
 
 - [x] Configuración de Prisma 7 y migración inicial (`Equipo`, `Mantenimiento`, `TipoEquipo`)
 - [x] Estructura Clean Architecture en Backend y Feature-Sliced Design en Frontend
 - [x] Implementación completa de endpoints REST y lógica de mantenimiento en Backend
 - [x] Implementación de la interfaz en Frontend (React + TypeScript + shadcn/ui + TailwindCSS)
-- [ ] Script de automatización de despliegue (`deploy.sh`)
+- [x] Script de automatización de despliegue (`deploy.sh`)
 
 ## Cómo ejecutar localmente
 
@@ -105,3 +111,33 @@ cd frontend
 npm install
 npm run dev
 ```
+
+## Cómo desplegar (Automatización)
+
+El despliegue completo a producción se realiza con un único script idempotente en la raíz del repositorio: [`deploy.sh`](./deploy.sh).
+
+### Requisitos previos
+
+1. Tener instaladas y autenticadas las herramientas CLI: `node`, `npx`, `vercel`, `flyctl` y `curl`.
+2. Tener configurados `backend/.env` (con la `DATABASE_URL` de producción en PostgreSQL/Neon) y `frontend/.env` (ver `.env.example` en cada carpeta).
+3. Tener enlazados los proyectos de Fly.io (`backend/fly.toml` + secreto `DATABASE_URL` en Fly) y Vercel (`frontend/.vercel/project.json` + variable `VITE_API_URL` en Vercel).
+
+### Ejecutar despliegue
+
+Desde Git Bash (Windows) o cualquier terminal Unix:
+
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
+
+El script ejecuta en orden:
+1. Verifica que existan las CLIs requeridas (`node`, `npx`, `vercel`, `flyctl`, `curl`), los archivos `.env` y la configuración de Fly.io/Vercel.
+2. Despliega el frontend en Vercel (`vercel --prod --yes`).
+3. Despliega el backend en Fly.io (`flyctl deploy --yes`) usando [`backend/Dockerfile`](./backend/Dockerfile).
+4. Aplica las migraciones de Prisma en producción (`npx prisma migrate deploy`).
+5. Comprueba con `curl` que `/health` del backend y la URL del frontend respondan HTTP `200`. Si cualquier paso falla, se detiene inmediatamente con un mensaje de error y código de salida `1`.
+
+## Uso de herramientas de IA
+
+Se utilizó **Gemini (Antigravity)** como asistente de apoyo durante el desarrollo para la estructuración del código, configuración de despliegue (Docker, Fly.io y Vercel), redacción del script `deploy.sh` y documentación.
