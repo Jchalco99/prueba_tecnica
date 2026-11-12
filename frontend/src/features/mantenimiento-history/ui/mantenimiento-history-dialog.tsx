@@ -80,14 +80,6 @@ export function MantenimientoHistoryDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Historial de mantenimientos preventivos</span>
-          <Badge variant="secondary">
-            {totalRegistros}{' '}
-            {totalRegistros === 1 ? 'registro' : 'registros'}
-          </Badge>
-        </div>
-
         {totalRegistros === 0 ? (
           <div className="rounded-md border border-dashed py-8 text-center text-sm text-muted-foreground">
             Esta unidad aún no tiene mantenimientos registrados.
