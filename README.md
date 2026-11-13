@@ -6,7 +6,7 @@ Aplicación web fullstack para el registro, control de horómetro y gestión de 
 
 - **Base de Datos:** PostgreSQL
 - **Backend:** Node.js, Express 5, TypeScript, Prisma ORM 7 (`@prisma/adapter-pg`)
-- **Frontend:** React 19, Vite, TypeScript, TailwindCSS
+- **Frontend:** React 19, Vite, TypeScript, TailwindCSS v4, shadcn/ui, react-router-dom
 - **Despliegue:** Vercel (Frontend), Fly.io (Backend), Supabase/Neon (PostgreSQL)
 
 ## Estructura del Proyecto
@@ -76,7 +76,8 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 - [x] Aislamiento de equipos por usuario y vista global de supervisión para administradores
 - [x] Estructura Clean Architecture en Backend y Feature-Sliced Design en Frontend
 - [x] Implementación completa de endpoints REST y lógica de mantenimiento en Backend
-- [x] Implementación de la interfaz en Frontend (React + TypeScript + shadcn/ui + TailwindCSS)
+- [x] Implementación de la interfaz en Frontend (React 19 + TypeScript + shadcn/ui + TailwindCSS + react-router-dom)
+- [x] Enrutamiento SPA y configuración de despliegue en Vercel (`vercel.json`)
 - [x] Script de automatización de despliegue (`deploy.sh`)
 
 ## Cómo ejecutar localmente

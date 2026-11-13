@@ -158,30 +158,30 @@ export function AuthPage({
   };
 
   return (
-    <div className="relative flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-8 text-foreground sm:px-6">
-      {/* Botones de utilidad flotantes superiores */}
-      <div className="fixed top-4 right-4 z-50 flex items-center gap-2">
-        {/* Acceso de Administrador discreto en modal modal para no ensuciar la tarjeta */}
+    <div className="relative flex min-h-dvh flex-col items-center justify-center bg-background px-4 py-8 text-foreground sm:px-6 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-500/10 via-background to-background">
+      {/* Botones de utilidad flotantes en la esquina inferior derecha */}
+      <div className="fixed right-5 bottom-5 z-50 flex items-center gap-2">
+        {/* Acceso de Administrador discreto en modal para no ensuciar la tarjeta */}
         <Dialog open={adminDialogOpen} onOpenChange={setAdminDialogOpen}>
           <DialogTrigger asChild>
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-9 gap-1.5 rounded-full border-mineral-border bg-card px-3 text-xs text-mineral shadow-xs hover:bg-mineral-surface"
+              className="h-10 gap-1.5 rounded-full border-amber-500/40 bg-amber-500/15 px-3.5 text-xs font-semibold text-amber-700 dark:text-amber-300 shadow-md hover:bg-amber-500/25"
             >
-              <ShieldCheck className="size-3.5" aria-hidden="true" />
+              <ShieldCheck className="size-4" aria-hidden="true" />
               <span>Cuenta Demo</span>
             </Button>
           </DialogTrigger>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
               <div className="flex items-center gap-2">
-                <ShieldCheck className="size-5 text-mineral" aria-hidden="true" />
+                <ShieldCheck className="size-5 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 <DialogTitle>Cuenta Administrador</DialogTitle>
                 <Badge
                   variant="outline"
-                  className="border-mineral-border bg-mineral-surface font-mono text-[10px] text-mineral"
+                  className="border-amber-500/30 bg-amber-500/10 font-mono text-[10px] font-semibold text-amber-700 dark:text-amber-300"
                 >
                   ADMIN
                 </Badge>
@@ -204,7 +204,7 @@ export function AuthPage({
 
             <Button
               type="button"
-              className="w-full gap-2"
+              className="w-full gap-2 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-semibold shadow-xs"
               onClick={handleAdminQuickLogin}
               disabled={submitting}
             >
@@ -223,10 +223,10 @@ export function AuthPage({
           aria-pressed={darkMode}
           aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
           title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-          className="size-9 rounded-full bg-card shadow-xs"
+          className="size-10 rounded-full bg-card shadow-md"
         >
           {darkMode ? (
-            <Sun className="size-4" aria-hidden="true" />
+            <Sun className="size-4 text-amber-500" aria-hidden="true" />
           ) : (
             <Moon className="size-4" aria-hidden="true" />
           )}
@@ -234,7 +234,7 @@ export function AuthPage({
       </div>
 
       <main id="contenido-principal" className="w-full max-w-sm space-y-6">
-        {/* Titulo unico */}
+        {/* Titulo */}
         <div className="text-center">
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
             Acceso al sistema
@@ -314,7 +314,7 @@ export function AuthPage({
 
                   <Button
                     type="submit"
-                    className="min-h-11 w-full sm:min-h-10"
+                    className="min-h-11 w-full sm:min-h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-xs shadow-blue-500/20"
                     disabled={submitting}
                   >
                     <LogIn className="size-4" aria-hidden="true" />
@@ -382,7 +382,7 @@ export function AuthPage({
 
                   <Button
                     type="submit"
-                    className="min-h-11 w-full sm:min-h-10"
+                    className="min-h-11 w-full sm:min-h-10 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold shadow-xs shadow-blue-500/20"
                     disabled={submitting}
                   >
                     <UserPlus className="size-4" aria-hidden="true" />

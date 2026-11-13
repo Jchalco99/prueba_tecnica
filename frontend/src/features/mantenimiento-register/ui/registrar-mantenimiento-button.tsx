@@ -67,6 +67,11 @@ export function RegistrarMantenimientoButton({
           size="icon-sm"
           title="Registrar Mantenimiento"
           aria-label={`Registrar Mantenimiento para ${equipo.codigo}`}
+          className={
+            equipo.requiereMantenimiento
+              ? 'bg-rose-600 hover:bg-rose-700 text-white shadow-xs'
+              : 'hover:border-emerald-500/50 hover:text-emerald-600 dark:hover:text-emerald-400'
+          }
         >
           <Wrench aria-hidden="true" />
           <span className="sr-only">Registrar Mantenimiento</span>

@@ -73,7 +73,7 @@ export function AppLayout({
           }`}
         >
           <div className="flex items-center gap-2.5 overflow-hidden">
-            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 shadow-sm shadow-amber-500/25">
               <HardHat className="size-5" aria-hidden="true" />
             </div>
             {!collapsed && (
@@ -109,13 +109,13 @@ export function AppLayout({
         {!collapsed ? (
           <div className="px-2">
             {isAdmin ? (
-              <div className="flex items-center gap-2 rounded-lg border border-mineral-border bg-mineral-surface px-2.5 py-1.5 text-xs font-medium text-mineral">
-                <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
+              <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+                <ShieldCheck className="size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
                 <span className="truncate">Administrador</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-foreground">
-                <UserIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <div className="flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-400">
+                <UserIcon className="size-4 shrink-0 text-sky-600 dark:text-sky-400" aria-hidden="true" />
                 <span className="truncate">Operador</span>
               </div>
             )}
@@ -124,17 +124,17 @@ export function AppLayout({
           <div className="flex justify-center">
             {isAdmin ? (
               <div
-                className="flex size-8 items-center justify-center rounded-md border border-mineral-border bg-mineral-surface text-mineral"
+                className="flex size-8 items-center justify-center rounded-md border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400"
                 title="Rol: Administrador"
               >
                 <ShieldCheck className="size-4" aria-hidden="true" />
               </div>
             ) : (
               <div
-                className="flex size-8 items-center justify-center rounded-md border border-border bg-muted/50 text-foreground"
+                className="flex size-8 items-center justify-center rounded-md border border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-400"
                 title="Rol: Operador"
               >
-                <UserIcon className="size-4 text-muted-foreground" aria-hidden="true" />
+                <UserIcon className="size-4" aria-hidden="true" />
               </div>
             )}
           </div>
@@ -143,12 +143,12 @@ export function AppLayout({
         {/* Menu item */}
         <nav aria-label="Navegación principal" className="space-y-1 px-1">
           <div
-            className={`flex items-center gap-3 rounded-md bg-secondary text-sm font-medium text-secondary-foreground ${
+            className={`flex items-center gap-3 rounded-md bg-blue-500/15 text-sm font-semibold text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-xs ${
               collapsed ? 'justify-center p-2' : 'px-3 py-2.5'
             }`}
             title={isAdmin ? 'Flota de Equipos' : 'Mis Equipos'}
           >
-            <Boxes className="size-4 shrink-0" aria-hidden="true" />
+            <Boxes className="size-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
             {!collapsed && (
               <span className="truncate">
                 {isAdmin ? 'Flota de Equipos' : 'Mis Equipos'}
@@ -170,7 +170,7 @@ export function AppLayout({
             className="w-full justify-start gap-2.5 px-2.5 h-9 text-xs text-muted-foreground hover:text-foreground"
           >
             {darkMode ? (
-              <Sun className="size-4 text-mineral" aria-hidden="true" />
+              <Sun className="size-4 text-amber-500" aria-hidden="true" />
             ) : (
               <Moon className="size-4" aria-hidden="true" />
             )}
@@ -189,7 +189,7 @@ export function AppLayout({
               className="size-8 text-muted-foreground hover:text-foreground"
             >
               {darkMode ? (
-                <Sun className="size-4 text-mineral" aria-hidden="true" />
+                <Sun className="size-4 text-amber-500" aria-hidden="true" />
               ) : (
                 <Moon className="size-4" aria-hidden="true" />
               )}
@@ -205,7 +205,7 @@ export function AppLayout({
         >
           <div className="flex items-center gap-2 overflow-hidden">
             <Avatar className="size-7 shrink-0">
-              <AvatarFallback className="bg-primary font-mono text-xs font-bold text-primary-foreground">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 font-mono text-xs font-bold text-white shadow-xs">
                 {getUserInitials(user.nombre)}
               </AvatarFallback>
             </Avatar>
@@ -238,7 +238,7 @@ export function AppLayout({
     <div className="flex h-full flex-col justify-between">
       <div className="space-y-4">
         <div className="flex items-center gap-2.5 px-2 py-2">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-foreground text-background shadow-xs">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950 shadow-sm shadow-amber-500/25">
             <HardHat className="size-5" aria-hidden="true" />
           </div>
           <div>
@@ -253,21 +253,21 @@ export function AppLayout({
 
         <div className="px-2">
           {isAdmin ? (
-            <div className="flex items-center gap-2 rounded-lg border border-mineral-border bg-mineral-surface px-2.5 py-1.5 text-xs font-medium text-mineral">
-              <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
+            <div className="flex items-center gap-2 rounded-lg border border-amber-500/30 bg-amber-500/10 px-2.5 py-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400">
+              <ShieldCheck className="size-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden="true" />
               <span>Administrador</span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 rounded-lg border border-border bg-muted/50 px-2.5 py-1.5 text-xs font-medium text-foreground">
-              <UserIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <div className="flex items-center gap-2 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1.5 text-xs font-semibold text-sky-700 dark:text-sky-400">
+              <UserIcon className="size-4 shrink-0 text-sky-600 dark:text-sky-400" aria-hidden="true" />
               <span>Operador</span>
             </div>
           )}
         </div>
 
         <nav aria-label="Navegación móvil" className="space-y-1 px-1">
-          <div className="flex items-center gap-3 rounded-md bg-secondary px-3 py-2.5 text-sm font-medium text-secondary-foreground">
-            <Boxes className="size-4 shrink-0" aria-hidden="true" />
+          <div className="flex items-center gap-3 rounded-md bg-blue-500/15 px-3 py-2.5 text-sm font-semibold text-blue-700 dark:text-blue-300 border border-blue-500/30 shadow-xs">
+            <Boxes className="size-4 shrink-0 text-blue-600 dark:text-blue-400" aria-hidden="true" />
             <span>{isAdmin ? 'Flota de Equipos' : 'Mis Equipos'}</span>
           </div>
         </nav>
@@ -282,7 +282,7 @@ export function AppLayout({
           className="w-full justify-start gap-2.5 h-10 text-xs text-foreground"
         >
           {darkMode ? (
-            <Sun className="size-4 text-mineral" aria-hidden="true" />
+            <Sun className="size-4 text-amber-500" aria-hidden="true" />
           ) : (
             <Moon className="size-4" aria-hidden="true" />
           )}
@@ -292,7 +292,7 @@ export function AppLayout({
         <div className="flex items-center justify-between rounded-md bg-muted/40 p-2">
           <div className="flex items-center gap-2 overflow-hidden">
             <Avatar className="size-8 shrink-0">
-              <AvatarFallback className="bg-primary font-mono text-xs font-bold text-primary-foreground">
+              <AvatarFallback className="bg-gradient-to-br from-blue-600 to-indigo-700 font-mono text-xs font-bold text-white shadow-xs">
                 {getUserInitials(user.nombre)}
               </AvatarFallback>
             </Avatar>

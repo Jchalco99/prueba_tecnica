@@ -96,7 +96,7 @@ export function EquipoCreateDialog({
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button variant="default">
+        <Button variant="default" className="min-h-11 sm:min-h-9 bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs">
           <Plus aria-hidden="true" />
           <span>{triggerLabel}</span>
         </Button>
@@ -182,7 +182,12 @@ export function EquipoCreateDialog({
             >
               Cancelar
             </Button>
-            <Button type="submit" variant="default" disabled={submitting}>
+            <Button
+              type="submit"
+              variant="default"
+              disabled={submitting}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold shadow-xs"
+            >
               {submitting ? 'Guardando...' : 'Guardar equipo'}
             </Button>
           </DialogFooter>

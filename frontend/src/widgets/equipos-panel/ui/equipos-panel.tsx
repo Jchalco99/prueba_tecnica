@@ -18,6 +18,7 @@ import {
   type UpdateEquipoInput,
 } from '@/entities/equipo/model/types';
 import { EstadoMantenimientoBadge } from '@/entities/equipo/ui/estado-mantenimiento-badge';
+import { TipoEquipoBadge } from '@/entities/equipo/ui/tipo-equipo-badge';
 import type { User } from '@/entities/user/model/types';
 import { EquipoCreateDialog } from '@/features/equipo-create/ui/equipo-create-dialog';
 import { EquipoEditDialog } from '@/features/equipo-edit/ui/equipo-edit-dialog';
@@ -561,7 +562,7 @@ export function EquiposPanel({
                             key={equipo.id}
                             className={`${
                               equipo.requiereMantenimiento
-                                ? 'bg-alert-surface/35 hover:bg-alert-surface/55'
+                                ? 'bg-rose-50/50 dark:bg-rose-950/20 hover:bg-rose-50/75 dark:hover:bg-rose-950/30'
                                 : ''
                             } ${animClass}`.trim()}
                           >
@@ -569,12 +570,11 @@ export function EquiposPanel({
                               {equipo.codigo}
                             </TableCell>
                             <TableCell className="px-3 py-3">
-                              <div className="text-sm font-medium text-foreground">
-                                {TIPO_EQUIPO_LABEL[equipo.tipo]}
-                              </div>
-                              <div className="text-xs text-muted-foreground">
-                                Cada {INTERVALO_POR_TIPO[equipo.tipo]} h
-                              </div>
+                              <TipoEquipoBadge
+                                tipo={equipo.tipo}
+                                showInterval
+                                intervalo={INTERVALO_POR_TIPO[equipo.tipo]}
+                              />
                             </TableCell>
                             {isAdmin && (
                               <TableCell className="px-3 py-3">
@@ -605,8 +605,10 @@ export function EquiposPanel({
                                 aria-label={`Avance de ciclo para ${equipo.codigo}: ${ciclo.porcentajeCiclo}%`}
                                 className={`mt-1.5 h-2 [&_[data-slot=progress-indicator]]:duration-500 [&_[data-slot=progress-indicator]]:ease-out ${
                                   equipo.requiereMantenimiento
-                                    ? 'bg-alert-border/40 [&_[data-slot=progress-indicator]]:bg-destructive'
-                                    : '[&_[data-slot=progress-indicator]]:bg-primary'
+                                    ? 'bg-rose-100 dark:bg-rose-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-rose-500 [&_[data-slot=progress-indicator]]:to-red-600'
+                                    : ciclo.porcentajeCiclo >= 80
+                                    ? 'bg-amber-100 dark:bg-amber-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-amber-500 [&_[data-slot=progress-indicator]]:to-orange-500'
+                                    : 'bg-sky-100 dark:bg-sky-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-sky-500 [&_[data-slot=progress-indicator]]:to-blue-600'
                                 }`}
                               />
                             </TableCell>
@@ -698,20 +700,23 @@ export function EquiposPanel({
                         key={equipo.id}
                         className={`justify-between gap-4 py-4 shadow-xs transition-colors ${
                           equipo.requiereMantenimiento
-                            ? 'border-alert-border bg-alert-surface/30'
-                            : ''
+                            ? 'border-rose-300 bg-rose-50/40 dark:border-rose-900/60 dark:bg-rose-950/20'
+                            : 'hover:border-border/80'
                         } ${animClass}`.trim()}
                       >
                         <CardContent className="space-y-3 px-4">
                           <div className="flex flex-wrap items-start justify-between gap-2">
-                            <div>
+                            <div className="space-y-1">
                               <span className="font-mono text-base font-semibold text-foreground">
                                 {equipo.codigo}
                               </span>
-                              <p className="text-xs text-muted-foreground">
-                                {TIPO_EQUIPO_LABEL[equipo.tipo]} · Cada{' '}
-                                {INTERVALO_POR_TIPO[equipo.tipo]} h
-                              </p>
+                              <div>
+                                <TipoEquipoBadge
+                                  tipo={equipo.tipo}
+                                  showInterval
+                                  intervalo={INTERVALO_POR_TIPO[equipo.tipo]}
+                                />
+                              </div>
                             </div>
                             <EstadoMantenimientoBadge
                               requiereMantenimiento={equipo.requiereMantenimiento}
@@ -766,8 +771,10 @@ export function EquiposPanel({
                               aria-label={`Avance de ciclo para ${equipo.codigo}: ${ciclo.porcentajeCiclo}%`}
                               className={`mt-1.5 h-2 [&_[data-slot=progress-indicator]]:duration-500 [&_[data-slot=progress-indicator]]:ease-out ${
                                 equipo.requiereMantenimiento
-                                  ? 'bg-alert-border/40 [&_[data-slot=progress-indicator]]:bg-destructive'
-                                  : '[&_[data-slot=progress-indicator]]:bg-primary'
+                                  ? 'bg-rose-100 dark:bg-rose-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-rose-500 [&_[data-slot=progress-indicator]]:to-red-600'
+                                  : ciclo.porcentajeCiclo >= 80
+                                  ? 'bg-amber-100 dark:bg-amber-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-amber-500 [&_[data-slot=progress-indicator]]:to-orange-500'
+                                  : 'bg-sky-100 dark:bg-sky-950/40 [&_[data-slot=progress-indicator]]:bg-gradient-to-r [&_[data-slot=progress-indicator]]:from-sky-500 [&_[data-slot=progress-indicator]]:to-blue-600'
                               }`}
                             />
                             <p className="mt-1.5 text-xs text-muted-foreground">

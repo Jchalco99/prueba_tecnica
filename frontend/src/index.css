@@ -47,8 +47,8 @@
   --card-foreground: #09090B;
   --popover: #FFFFFF;
   --popover-foreground: #09090B;
-  --primary: #18181B;
-  --primary-foreground: #FAFAFA;
+  --primary: #1D4ED8;
+  --primary-foreground: #FFFFFF;
   --secondary: #F4F4F5;
   --secondary-foreground: #18181B;
   --muted: #F4F4F5;
@@ -59,7 +59,7 @@
   --destructive-foreground: #FFFFFF;
   --border: #E4E4E7;
   --input: #D4D4D8;
-  --ring: #71717A;
+  --ring: #3B82F6;
   --alert-surface: #FEF2F2;
   --alert-foreground: #B91C1C;
   --alert-border: #FECACA;
@@ -78,8 +78,8 @@
   --card-foreground: #FAFAFA;
   --popover: #111114;
   --popover-foreground: #FAFAFA;
-  --primary: #FAFAFA;
-  --primary-foreground: #18181B;
+  --primary: #3B82F6;
+  --primary-foreground: #FFFFFF;
   --secondary: #18181B;
   --secondary-foreground: #FAFAFA;
   --muted: #18181B;
@@ -90,7 +90,7 @@
   --destructive-foreground: #FFFFFF;
   --border: #27272A;
   --input: #3F3F46;
-  --ring: #A1A1AA;
+  --ring: #60A5FA;
   --alert-surface: #2A0F12;
   --alert-foreground: #F87171;
   --alert-border: #7F1D1D;
