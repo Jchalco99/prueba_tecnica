@@ -7,11 +7,19 @@ export interface MantenimientoEntity {
   horometroActual: number;
 }
 
+export interface PropietarioResumen {
+  id: number;
+  nombre: string;
+  email: string;
+}
+
 export interface EquipoEntity {
   id: number;
   codigo: string;
   tipo: TipoEquipo;
   horometro: number;
+  userId: number;
+  user?: PropietarioResumen;
   mantenimientos: MantenimientoEntity[];
   createdAt: Date;
   updatedAt: Date;

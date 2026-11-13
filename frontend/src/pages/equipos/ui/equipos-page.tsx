@@ -1,4 +1,3 @@
-import { Moon, Sun } from 'lucide-react';
 import * as React from 'react';
 import { equiposApi } from '@/entities/equipo/api/equipos.api';
 import type {
@@ -6,15 +5,23 @@ import type {
   Equipo,
   UpdateEquipoInput,
 } from '@/entities/equipo/model/types';
-import { Button } from '@/shared/ui/button';
+import type { User } from '@/entities/user/model/types';
+import { AppLayout } from '@/shared/ui/app-layout';
 import { EquiposPanel } from '@/widgets/equipos-panel/ui/equipos-panel';
 
 interface EquiposPageProps {
+  user: User;
   darkMode: boolean;
   onToggleDarkMode: () => void;
+  onLogout: () => void;
 }
 
-export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
+export function EquiposPage({
+  user,
+  darkMode,
+  onToggleDarkMode,
+  onLogout,
+}: EquiposPageProps) {
   const [equipos, setEquipos] = React.useState<Equipo[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
@@ -106,7 +113,7 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
     setRecentlyCreatedId(creado.id);
     showFeedback({
       type: 'ok',
-      text: `Equipo ${creado.codigo} registrado correctamente con horómetro en ${creado.horometro} h.`,
+      text: `Equipo ${creado.codigo} registrado correctamente con horometro en ${creado.horometro} h.`,
     });
   };
 
@@ -117,7 +124,7 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
     );
     showFeedback({
       type: 'ok',
-      text: `Equipo ${actualizado.codigo} actualizado (horómetro: ${actualizado.horometro} h).`,
+      text: `Equipo ${actualizado.codigo} actualizado (horometro: ${actualizado.horometro} h).`,
     });
   };
 
@@ -165,43 +172,27 @@ export function EquiposPage({ darkMode, onToggleDarkMode }: EquiposPageProps) {
   };
 
   return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
-      <main
-        id="contenido-principal"
-        className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-8"
-      >
-        <EquiposPanel
-          equipos={equipos}
-          loading={loading}
-          error={error}
-          feedback={feedback}
-          feedbackKey={feedbackKey}
-          recentlyCreatedId={recentlyCreatedId}
-          recentlyMaintainedId={recentlyMaintainedId}
-          onRetry={loadEquipos}
-          onCreate={handleCreate}
-          onUpdate={handleUpdate}
-          onDelete={handleDelete}
-          onRegisterMantenimiento={handleRegisterMantenimiento}
-        />
-      </main>
-
-      <Button
-        type="button"
-        variant="outline"
-        size="icon"
-        onClick={onToggleDarkMode}
-        aria-pressed={darkMode}
-        aria-label={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-        title={darkMode ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'}
-        className="fixed right-5 bottom-5 z-40 size-10 rounded-full bg-card shadow-md"
-      >
-        {darkMode ? (
-          <Sun className="size-4" aria-hidden="true" />
-        ) : (
-          <Moon className="size-4" aria-hidden="true" />
-        )}
-      </Button>
-    </div>
+    <AppLayout
+      user={user}
+      darkMode={darkMode}
+      onToggleDarkMode={onToggleDarkMode}
+      onLogout={onLogout}
+    >
+      <EquiposPanel
+        currentUser={user}
+        equipos={equipos}
+        loading={loading}
+        error={error}
+        feedback={feedback}
+        feedbackKey={feedbackKey}
+        recentlyCreatedId={recentlyCreatedId}
+        recentlyMaintainedId={recentlyMaintainedId}
+        onRetry={loadEquipos}
+        onCreate={handleCreate}
+        onUpdate={handleUpdate}
+        onDelete={handleDelete}
+        onRegisterMantenimiento={handleRegisterMantenimiento}
+      />
+    </AppLayout>
   );
 }

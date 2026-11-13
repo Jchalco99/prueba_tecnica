@@ -14,24 +14,42 @@ datasource db {
   provider = "postgresql"
 }
 
-// Modelo de los Equipos Mineros
+model User {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  equipos   Equipo[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("Users")
+}
+
 model Equipo {
   id              Int             @id @default(autoincrement())
   codigo          String          @unique
   tipo            TipoEquipo
   horometro       Int             @default(0)
+  userId          Int
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   mantenimientos  Mantenimiento[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
 }
 
-// Historial de mantenimientos
 model Mantenimiento {
   id              Int      @id @default(autoincrement())
   equipoId        Int
   equipo          Equipo   @relation(fields: [equipoId], references: [id], onDelete: Cascade)
   fecha           DateTime @default(now())
   horometroActual Int
+}
+
+enum Role {
+  USER
+  ADMIN
 }
 
 enum TipoEquipo {

@@ -25,11 +25,19 @@ export interface Mantenimiento {
   horometroActual: number;
 }
 
+export interface PropietarioEquipo {
+  id: number;
+  nombre: string;
+  email: string;
+}
+
 export interface Equipo {
   id: number;
   codigo: string;
   tipo: TipoEquipo;
   horometro: number;
+  userId: number;
+  user?: PropietarioEquipo;
   mantenimientos: Mantenimiento[];
   requiereMantenimiento: boolean;
   createdAt: string;

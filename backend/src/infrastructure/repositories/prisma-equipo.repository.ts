@@ -9,16 +9,31 @@ import {
 } from '../../domain/repositories/equipo.repository';
 import { prisma } from '../database/prisma/prisma.client';
 
-const includeMantenimientosOrder = {
+const includeEquipoRelations = {
   mantenimientos: {
     orderBy: [{ fecha: 'desc' as const }, { id: 'desc' as const }],
+  },
+  user: {
+    select: {
+      id: true,
+      nombre: true,
+      email: true,
+    },
   },
 };
 
 export class PrismaEquipoRepository implements IEquipoRepository {
   async findAll(): Promise<EquipoEntity[]> {
     return prisma.equipo.findMany({
-      include: includeMantenimientosOrder,
+      include: includeEquipoRelations,
+      orderBy: { id: 'asc' },
+    });
+  }
+
+  async findAllByUserId(userId: number): Promise<EquipoEntity[]> {
+    return prisma.equipo.findMany({
+      where: { userId },
+      include: includeEquipoRelations,
       orderBy: { id: 'asc' },
     });
   }
@@ -26,14 +41,14 @@ export class PrismaEquipoRepository implements IEquipoRepository {
   async findById(id: number): Promise<EquipoEntity | null> {
     return prisma.equipo.findUnique({
       where: { id },
-      include: includeMantenimientosOrder,
+      include: includeEquipoRelations,
     });
   }
 
   async findByCodigo(codigo: string): Promise<EquipoEntity | null> {
     return prisma.equipo.findUnique({
       where: { codigo },
-      include: includeMantenimientosOrder,
+      include: includeEquipoRelations,
     });
   }
 
@@ -43,8 +58,9 @@ export class PrismaEquipoRepository implements IEquipoRepository {
         codigo: data.codigo,
         tipo: data.tipo,
         horometro: data.horometro,
+        userId: data.userId,
       },
-      include: includeMantenimientosOrder,
+      include: includeEquipoRelations,
     });
   }
 
@@ -52,7 +68,7 @@ export class PrismaEquipoRepository implements IEquipoRepository {
     return prisma.equipo.update({
       where: { id },
       data,
-      include: includeMantenimientosOrder,
+      include: includeEquipoRelations,
     });
   }
 
@@ -83,7 +99,7 @@ export class PrismaEquipoRepository implements IEquipoRepository {
       const equipo = await tx.equipo.update({
         where: { id: equipoId },
         data: { horometro: nuevoHorometro },
-        include: includeMantenimientosOrder,
+        include: includeEquipoRelations,
       });
 
       return { mantenimiento, equipo };

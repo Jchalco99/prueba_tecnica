@@ -5,6 +5,7 @@ export interface CreateEquipoData {
   codigo: string;
   tipo: TipoEquipo;
   horometro: number;
+  userId: number;
 }
 
 export interface UpdateEquipoData {
@@ -15,6 +16,7 @@ export interface UpdateEquipoData {
 
 export interface IEquipoRepository {
   findAll(): Promise<EquipoEntity[]>;
+  findAllByUserId(userId: number): Promise<EquipoEntity[]>;
   findById(id: number): Promise<EquipoEntity | null>;
   findByCodigo(codigo: string): Promise<EquipoEntity | null>;
   create(data: CreateEquipoData): Promise<EquipoEntity>;

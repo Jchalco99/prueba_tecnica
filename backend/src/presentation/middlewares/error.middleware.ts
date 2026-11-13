@@ -18,7 +18,12 @@ export function errorMiddleware(
     'code' in err &&
     (err as { code?: string }).code === 'P2002'
   ) {
-    res.status(409).json({ error: 'El código del equipo ya existe.' });
+    const meta = (err as { meta?: { target?: unknown } }).meta;
+    const target = Array.isArray(meta?.target) ? meta.target.join(',') : '';
+    const message = target.includes('email')
+      ? 'El correo electrónico ya está registrado.'
+      : 'El registro ya existe.';
+    res.status(409).json({ error: message });
     return;
   }
 

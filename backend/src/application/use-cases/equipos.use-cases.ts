@@ -8,6 +8,7 @@ import {
 } from '../../domain/enums/tipo-equipo.enum';
 import {
   ConflictError,
+  ForbiddenError,
   NotFoundError,
   ValidationError,
 } from '../../domain/errors/domain.error';
@@ -15,6 +16,7 @@ import {
   IEquipoRepository,
   UpdateEquipoData,
 } from '../../domain/repositories/equipo.repository';
+import { AuthActor } from '../dtos/auth.dto';
 import {
   CreateEquipoDTO,
   RegisterMantenimientoDTO,
@@ -25,12 +27,19 @@ import { mapEquipoConEstado } from '../services/mantenimiento-calculator.service
 export class EquiposUseCases {
   constructor(private readonly equipoRepository: IEquipoRepository) {}
 
-  async listEquipos(): Promise<EquipoConEstado[]> {
-    const equipos = await this.equipoRepository.findAll();
+  async listEquipos(actor: AuthActor): Promise<EquipoConEstado[]> {
+    const equipos =
+      actor.role === 'ADMIN'
+        ? await this.equipoRepository.findAll()
+        : await this.equipoRepository.findAllByUserId(actor.id);
+
     return equipos.map(mapEquipoConEstado);
   }
 
-  async createEquipo(input: CreateEquipoDTO): Promise<EquipoConEstado> {
+  async createEquipo(
+    input: CreateEquipoDTO,
+    actor: AuthActor,
+  ): Promise<EquipoConEstado> {
     const codigo =
       typeof input.codigo === 'string' ? input.codigo.trim() : '';
 
@@ -60,6 +69,7 @@ export class EquiposUseCases {
       codigo,
       tipo: input.tipo,
       horometro,
+      userId: actor.id,
     });
 
     return mapEquipoConEstado(creado);
@@ -68,6 +78,7 @@ export class EquiposUseCases {
   async updateEquipo(
     id: number,
     input: UpdateEquipoDTO,
+    actor: AuthActor,
   ): Promise<EquipoConEstado> {
     if (!Number.isInteger(id) || id <= 0) {
       throw new ValidationError('El ID del equipo no es válido.');
@@ -76,6 +87,12 @@ export class EquiposUseCases {
     const actual = await this.equipoRepository.findById(id);
     if (!actual) {
       throw new NotFoundError(`Equipo con ID ${id} no encontrado.`);
+    }
+
+    if (actor.role !== 'ADMIN' && actual.userId !== actor.id) {
+      throw new ForbiddenError(
+        'No tienes permisos para modificar un equipo que pertenece a otro usuario.',
+      );
     }
 
     const data: UpdateEquipoData = {};
@@ -120,7 +137,7 @@ export class EquiposUseCases {
     return mapEquipoConEstado(actualizado);
   }
 
-  async deleteEquipo(id: number): Promise<void> {
+  async deleteEquipo(id: number, actor: AuthActor): Promise<void> {
     if (!Number.isInteger(id) || id <= 0) {
       throw new ValidationError('El ID del equipo no es válido.');
     }
@@ -130,12 +147,19 @@ export class EquiposUseCases {
       throw new NotFoundError(`Equipo con ID ${id} no encontrado.`);
     }
 
+    if (actor.role !== 'ADMIN' && actual.userId !== actor.id) {
+      throw new ForbiddenError(
+        'No tienes permisos para eliminar un equipo que pertenece a otro usuario.',
+      );
+    }
+
     await this.equipoRepository.delete(id);
   }
 
   async registerMantenimiento(
     equipoId: number,
     input: RegisterMantenimientoDTO = {},
+    actor: AuthActor,
   ): Promise<{ mantenimiento: MantenimientoEntity; equipo: EquipoConEstado }> {
     if (!Number.isInteger(equipoId) || equipoId <= 0) {
       throw new ValidationError('El ID del equipo no es válido.');
@@ -144,6 +168,12 @@ export class EquiposUseCases {
     const equipo = await this.equipoRepository.findById(equipoId);
     if (!equipo) {
       throw new NotFoundError(`Equipo con ID ${equipoId} no encontrado.`);
+    }
+
+    if (actor.role !== 'ADMIN' && equipo.userId !== actor.id) {
+      throw new ForbiddenError(
+        'No tienes permisos para registrar mantenimiento en un equipo de otro usuario.',
+      );
     }
 
     const horometroActual =

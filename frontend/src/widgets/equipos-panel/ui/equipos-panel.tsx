@@ -4,6 +4,7 @@ import {
   RefreshCw,
   Search,
   Trash2,
+  User as UserIcon,
 } from 'lucide-react';
 import * as React from 'react';
 import {
@@ -17,6 +18,7 @@ import {
   type UpdateEquipoInput,
 } from '@/entities/equipo/model/types';
 import { EstadoMantenimientoBadge } from '@/entities/equipo/ui/estado-mantenimiento-badge';
+import type { User } from '@/entities/user/model/types';
 import { EquipoCreateDialog } from '@/features/equipo-create/ui/equipo-create-dialog';
 import { EquipoEditDialog } from '@/features/equipo-edit/ui/equipo-edit-dialog';
 import { MantenimientoHistoryDialog } from '@/features/mantenimiento-history/ui/mantenimiento-history-dialog';
@@ -65,6 +67,7 @@ type FiltroEstado = 'TODOS' | 'ALERTA' | 'OPERATIVO';
 type FiltroTipo = 'TODOS' | TipoEquipo;
 
 interface EquiposPanelProps {
+  currentUser: User;
   equipos: Equipo[];
   loading: boolean;
   error: string | null;
@@ -94,6 +97,7 @@ function getEquipoAnimationClass(
 }
 
 export function EquiposPanel({
+  currentUser,
   equipos,
   loading,
   error,
@@ -109,9 +113,22 @@ export function EquiposPanel({
 }: EquiposPanelProps) {
   const [filtroEstado, setFiltroEstado] = React.useState<FiltroEstado>('TODOS');
   const [filtroTipo, setFiltroTipo] = React.useState<FiltroTipo>('TODOS');
+  const [filtroPropietario, setFiltroPropietario] = React.useState<string>('TODOS');
   const [busqueda, setBusqueda] = React.useState('');
   const [equipoToDelete, setEquipoToDelete] = React.useState<Equipo | null>(null);
   const [deletingId, setDeletingId] = React.useState<number | null>(null);
+
+  const isAdmin = currentUser.role === 'ADMIN';
+
+  const propietariosUnicos = React.useMemo(() => {
+    const map = new Map<number, { id: number; nombre: string; email: string }>();
+    for (const eq of equipos) {
+      if (eq.user) {
+        map.set(eq.user.id, eq.user);
+      }
+    }
+    return Array.from(map.values());
+  }, [equipos]);
 
   const totalEquipos = equipos.length;
   const totalEnAlerta = equipos.filter((e) => e.requiereMantenimiento).length;
@@ -129,16 +146,29 @@ export function EquiposPanel({
       if (filtroTipo !== 'TODOS' && equipo.tipo !== filtroTipo) {
         return false;
       }
+      if (
+        isAdmin &&
+        filtroPropietario !== 'TODOS' &&
+        String(equipo.userId) !== filtroPropietario
+      ) {
+        return false;
+      }
       if (!query) {
         return true;
       }
+      const ownerMatch =
+        equipo.user &&
+        (equipo.user.nombre.toLowerCase().includes(query) ||
+          equipo.user.email.toLowerCase().includes(query));
+
       return (
         equipo.codigo.toLowerCase().includes(query) ||
         TIPO_EQUIPO_LABEL[equipo.tipo].toLowerCase().includes(query) ||
-        equipo.tipo.toLowerCase().includes(query)
+        equipo.tipo.toLowerCase().includes(query) ||
+        Boolean(ownerMatch)
       );
     });
-  }, [equipos, filtroEstado, filtroTipo, busqueda]);
+  }, [equipos, filtroEstado, filtroTipo, filtroPropietario, busqueda, isAdmin]);
 
   const confirmDelete = async () => {
     if (!equipoToDelete) {
@@ -154,11 +184,18 @@ export function EquiposPanel({
     }
   };
 
+  const resetFiltros = () => {
+    setFiltroEstado('TODOS');
+    setFiltroTipo('TODOS');
+    setFiltroPropietario('TODOS');
+    setBusqueda('');
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">
-          Equipos mineros
+          {isAdmin ? 'Flota general de equipos mineros' : 'Mis equipos mineros'}
         </h1>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -167,6 +204,7 @@ export function EquiposPanel({
             variant="outline"
             onClick={onRetry}
             disabled={loading}
+            className="min-h-11 sm:min-h-9"
           >
             <RefreshCw className={loading ? 'animate-spin' : ''} aria-hidden="true" />
             <span>Actualizar</span>
@@ -207,7 +245,7 @@ export function EquiposPanel({
       <Card className="gap-4 shadow-xs">
         <CardHeader>
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <div className="relative w-full sm:w-64">
                 <Search
                   className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-muted-foreground"
@@ -215,12 +253,20 @@ export function EquiposPanel({
                 />
                 <Input
                   id="buscar-equipo"
-                  aria-label="Buscar equipo por código o tipo"
+                  aria-label={
+                    isAdmin
+                      ? 'Buscar equipo por código, tipo o propietario'
+                      : 'Buscar equipo por código o tipo'
+                  }
                   type="search"
-                  placeholder="Buscar código o tipo..."
+                  placeholder={
+                    isAdmin
+                      ? 'Buscar código, tipo o usuario...'
+                      : 'Buscar código o tipo...'
+                  }
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  className="pl-9"
+                  className="min-h-11 pl-9 sm:min-h-9"
                 />
               </div>
 
@@ -230,7 +276,7 @@ export function EquiposPanel({
               >
                 <SelectTrigger
                   aria-label="Filtrar por tipo de equipo"
-                  className="w-full sm:w-48"
+                  className="min-h-11 w-full sm:min-h-9 sm:w-48"
                 >
                   <SelectValue placeholder="Todos los tipos" />
                 </SelectTrigger>
@@ -243,6 +289,28 @@ export function EquiposPanel({
                   ))}
                 </SelectContent>
               </Select>
+
+              {isAdmin && propietariosUnicos.length > 0 && (
+                <Select
+                  value={filtroPropietario}
+                  onValueChange={setFiltroPropietario}
+                >
+                  <SelectTrigger
+                    aria-label="Filtrar por propietario del equipo"
+                    className="min-h-11 w-full sm:min-h-9 sm:w-56"
+                  >
+                    <SelectValue placeholder="Todos los propietarios" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TODOS">Todos los propietarios</SelectItem>
+                    {propietariosUnicos.map((prop) => (
+                      <SelectItem key={prop.id} value={String(prop.id)}>
+                        {prop.nombre} ({prop.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
             </div>
 
             <Tabs
@@ -250,7 +318,7 @@ export function EquiposPanel({
               onValueChange={(value) => setFiltroEstado(value as FiltroEstado)}
               className="w-full lg:w-auto"
             >
-              <TabsList className="grid w-full grid-cols-3 lg:inline-flex lg:w-auto">
+              <TabsList className="grid min-h-11 w-full grid-cols-3 sm:min-h-9 lg:inline-flex lg:w-auto">
                 <TabsTrigger value="TODOS" className="gap-1.5 px-3">
                   <span>Todos</span>
                   {loading ? (
@@ -301,6 +369,9 @@ export function EquiposPanel({
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="px-3">Código</TableHead>
                       <TableHead className="px-3">Tipo</TableHead>
+                      {isAdmin && (
+                        <TableHead className="px-3">Propietario</TableHead>
+                      )}
                       <TableHead className="px-3">Horómetro</TableHead>
                       <TableHead className="px-3">Ciclo preventivo</TableHead>
                       <TableHead className="px-3 text-center">Estado</TableHead>
@@ -309,7 +380,7 @@ export function EquiposPanel({
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {Array.from({ length: 5 }).map((_, index) => (
+                    {Array.from({ length: 4 }).map((_, index) => (
                       <TableRow key={index} className="hover:bg-transparent">
                         <TableCell className="px-3 py-3.5">
                           <Skeleton className="h-4 w-20" />
@@ -320,6 +391,14 @@ export function EquiposPanel({
                             <Skeleton className="h-3 w-16" />
                           </div>
                         </TableCell>
+                        {isAdmin && (
+                          <TableCell className="px-3 py-3.5">
+                            <div className="space-y-1.5">
+                              <Skeleton className="h-4 w-28" />
+                              <Skeleton className="h-3 w-36" />
+                            </div>
+                          </TableCell>
+                        )}
                         <TableCell className="px-3 py-3.5">
                           <Skeleton className="h-4 w-16" />
                         </TableCell>
@@ -407,7 +486,7 @@ export function EquiposPanel({
                     type="button"
                     variant="outline"
                     size="sm"
-                    className="bg-card text-foreground"
+                    className="min-h-11 bg-card text-foreground sm:min-h-8"
                     onClick={onRetry}
                   >
                     <RefreshCw aria-hidden="true" />
@@ -424,6 +503,9 @@ export function EquiposPanel({
                     <TableRow className="hover:bg-transparent">
                       <TableHead className="px-3">Código</TableHead>
                       <TableHead className="px-3">Tipo</TableHead>
+                      {isAdmin && (
+                        <TableHead className="px-3">Propietario</TableHead>
+                      )}
                       <TableHead className="px-3">Horómetro</TableHead>
                       <TableHead className="px-3">Ciclo preventivo</TableHead>
                       <TableHead className="px-3 text-center">Estado</TableHead>
@@ -435,23 +517,30 @@ export function EquiposPanel({
                     {equiposFiltrados.length === 0 ? (
                       <TableRow className="hover:bg-transparent">
                         <TableCell
-                          colSpan={7}
-                          className="h-28 text-center text-sm text-muted-foreground"
+                          colSpan={isAdmin ? 8 : 7}
+                          className="h-32 text-center text-sm text-muted-foreground"
                         >
                           {equipos.length === 0 ? (
-                            <span>Sin datos.</span>
+                            <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-1.5 py-2">
+                              <span className="font-medium text-foreground">
+                                {isAdmin
+                                  ? 'No hay equipos registrados en el sistema'
+                                  : 'Aún no tienes equipos registrados en tu cuenta'}
+                              </span>
+                              <span>
+                                Usa el botón &ldquo;Nuevo equipo&rdquo; en la parte superior para agregar la primera unidad minera.
+                              </span>
+                            </div>
                           ) : (
                             <div className="flex flex-col items-center justify-center gap-2">
-                              <span>Sin resultados para los filtros aplicados.</span>
+                              <span>
+                                No se encontraron unidades que coincidan con los filtros seleccionados.
+                              </span>
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="xs"
-                                onClick={() => {
-                                  setFiltroEstado('TODOS');
-                                  setFiltroTipo('TODOS');
-                                  setBusqueda('');
-                                }}
+                                onClick={resetFiltros}
                               >
                                 Limpiar filtros
                               </Button>
@@ -487,6 +576,18 @@ export function EquiposPanel({
                                 Cada {INTERVALO_POR_TIPO[equipo.tipo]} h
                               </div>
                             </TableCell>
+                            {isAdmin && (
+                              <TableCell className="px-3 py-3">
+                                <div className="text-xs font-medium text-foreground">
+                                  {equipo.user?.nombre ?? `Usuario #${equipo.userId}`}
+                                </div>
+                                {equipo.user?.email && (
+                                  <div className="font-mono text-[11px] text-muted-foreground">
+                                    {equipo.user.email}
+                                  </div>
+                                )}
+                              </TableCell>
+                            )}
                             <TableCell className="px-3 py-3 font-mono text-sm font-semibold tabular-nums">
                               {equipo.horometro} h
                             </TableCell>
@@ -555,21 +656,29 @@ export function EquiposPanel({
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:hidden">
                 {equiposFiltrados.length === 0 ? (
-                  <div className="col-span-full rounded-md border py-10 text-center text-sm text-muted-foreground">
+                  <div className="col-span-full rounded-md border px-4 py-10 text-center text-sm text-muted-foreground">
                     {equipos.length === 0 ? (
-                      <span>Sin datos.</span>
+                      <div className="mx-auto flex max-w-md flex-col items-center justify-center gap-1.5">
+                        <span className="font-medium text-foreground">
+                          {isAdmin
+                            ? 'No hay equipos registrados en el sistema'
+                            : 'Aún no tienes equipos registrados en tu cuenta'}
+                        </span>
+                        <span>
+                          Usa el botón &ldquo;Nuevo equipo&rdquo; en la parte superior para agregar la primera unidad minera.
+                        </span>
+                      </div>
                     ) : (
                       <div className="flex flex-col items-center justify-center gap-2">
-                        <span>Sin resultados para los filtros aplicados.</span>
+                        <span>
+                          No se encontraron unidades que coincidan con los filtros seleccionados.
+                        </span>
                         <Button
                           type="button"
                           variant="outline"
-                          size="xs"
-                          onClick={() => {
-                            setFiltroEstado('TODOS');
-                            setFiltroTipo('TODOS');
-                            setBusqueda('');
-                          }}
+                          size="sm"
+                          className="min-h-11 sm:min-h-8"
+                          onClick={resetFiltros}
                         >
                           Limpiar filtros
                         </Button>
@@ -578,109 +687,128 @@ export function EquiposPanel({
                   </div>
                 ) : (
                   equiposFiltrados.map((equipo) => {
-                  const ciclo = getCicloMantenimientoInfo(equipo);
-                  const animClass = getEquipoAnimationClass(
-                    equipo.id,
-                    recentlyCreatedId,
-                    recentlyMaintainedId,
-                  );
-                  return (
-                    <Card
-                      key={equipo.id}
-                      className={`justify-between gap-4 py-4 shadow-xs transition-colors ${
-                        equipo.requiereMantenimiento
-                          ? 'border-alert-border bg-alert-surface/30'
-                          : ''
-                      } ${animClass}`.trim()}
-                    >
-                      <CardContent className="space-y-3 px-4">
-                        <div className="flex flex-wrap items-start justify-between gap-2">
+                    const ciclo = getCicloMantenimientoInfo(equipo);
+                    const animClass = getEquipoAnimationClass(
+                      equipo.id,
+                      recentlyCreatedId,
+                      recentlyMaintainedId,
+                    );
+                    return (
+                      <Card
+                        key={equipo.id}
+                        className={`justify-between gap-4 py-4 shadow-xs transition-colors ${
+                          equipo.requiereMantenimiento
+                            ? 'border-alert-border bg-alert-surface/30'
+                            : ''
+                        } ${animClass}`.trim()}
+                      >
+                        <CardContent className="space-y-3 px-4">
+                          <div className="flex flex-wrap items-start justify-between gap-2">
+                            <div>
+                              <span className="font-mono text-base font-semibold text-foreground">
+                                {equipo.codigo}
+                              </span>
+                              <p className="text-xs text-muted-foreground">
+                                {TIPO_EQUIPO_LABEL[equipo.tipo]} · Cada{' '}
+                                {INTERVALO_POR_TIPO[equipo.tipo]} h
+                              </p>
+                            </div>
+                            <EstadoMantenimientoBadge
+                              requiereMantenimiento={equipo.requiereMantenimiento}
+                            />
+                          </div>
+
+                          {isAdmin && equipo.user && (
+                            <div className="flex items-center gap-1.5 rounded-md border bg-muted/30 px-2.5 py-1.5 text-xs">
+                              <UserIcon
+                                className="size-3.5 shrink-0 text-muted-foreground"
+                                aria-hidden="true"
+                              />
+                              <span className="font-medium text-foreground">
+                                {equipo.user.nombre}
+                              </span>
+                              <span className="font-mono text-[11px] text-muted-foreground">
+                                ({equipo.user.email})
+                              </span>
+                            </div>
+                          )}
+
+                          <div className="grid grid-cols-2 gap-2 rounded-md border bg-muted/40 p-3 text-xs">
+                            <div>
+                              <span className="text-muted-foreground">
+                                Horómetro actual
+                              </span>
+                              <p className="mt-0.5 font-mono text-base font-semibold text-foreground">
+                                {equipo.horometro} h
+                              </p>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">
+                                Próximo servicio
+                              </span>
+                              <p className="mt-0.5 font-mono text-base font-semibold text-foreground">
+                                {ciclo.proximoUmbral} h
+                              </p>
+                            </div>
+                          </div>
+
                           <div>
-                            <span className="font-mono text-base font-semibold text-foreground">
-                              {equipo.codigo}
-                            </span>
-                            <p className="text-xs text-muted-foreground">
-                              {TIPO_EQUIPO_LABEL[equipo.tipo]} · Cada{' '}
-                              {INTERVALO_POR_TIPO[equipo.tipo]} h
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-mono font-medium text-foreground">
+                                Ciclo: {ciclo.horasEnCiclo} / {ciclo.intervalo} h
+                              </span>
+                              <span className="font-mono text-muted-foreground">
+                                {ciclo.porcentajeCiclo}%
+                              </span>
+                            </div>
+                            <Progress
+                              value={ciclo.porcentajeCiclo}
+                              aria-label={`Avance de ciclo para ${equipo.codigo}: ${ciclo.porcentajeCiclo}%`}
+                              className={`mt-1.5 h-2 [&_[data-slot=progress-indicator]]:duration-500 [&_[data-slot=progress-indicator]]:ease-out ${
+                                equipo.requiereMantenimiento
+                                  ? 'bg-alert-border/40 [&_[data-slot=progress-indicator]]:bg-destructive'
+                                  : '[&_[data-slot=progress-indicator]]:bg-primary'
+                              }`}
+                            />
+                            <p className="mt-1.5 text-xs text-muted-foreground">
+                              Último servicio: {ciclo.ultimoHorometro} h (
+                              {formatFecha(ciclo.fechaUltimoMantenimiento)})
                             </p>
                           </div>
-                          <EstadoMantenimientoBadge
-                            requiereMantenimiento={equipo.requiereMantenimiento}
+
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Badge variant="secondary">
+                              Historial: {equipo.mantenimientos?.length ?? 0} servicios
+                            </Badge>
+                          </div>
+                        </CardContent>
+
+                        <CardFooter className="flex-wrap gap-2 border-t px-4 pt-3">
+                          <RegistrarMantenimientoButton
+                            equipo={equipo}
+                            onRegisterMantenimiento={onRegisterMantenimiento}
                           />
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-2 rounded-md border bg-muted/40 p-3 text-xs">
-                          <div>
-                            <span className="text-muted-foreground">
-                              Horómetro actual
+                          <MantenimientoHistoryDialog equipo={equipo} />
+                          <EquipoEditDialog equipo={equipo} onUpdate={onUpdate} />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setEquipoToDelete(equipo)}
+                            disabled={deletingId === equipo.id}
+                            aria-label={`Eliminar equipo ${equipo.codigo}`}
+                          >
+                            <Trash2 aria-hidden="true" />
+                            <span>
+                              {deletingId === equipo.id
+                                ? 'Eliminando...'
+                                : 'Eliminar'}
                             </span>
-                            <p className="mt-0.5 font-mono text-base font-semibold text-foreground">
-                              {equipo.horometro} h
-                            </p>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground">
-                              Próximo servicio
-                            </span>
-                            <p className="mt-0.5 font-mono text-base font-semibold text-foreground">
-                              {ciclo.proximoUmbral} h
-                            </p>
-                          </div>
-                        </div>
-
-                        <div>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="font-mono font-medium text-foreground">
-                              Ciclo: {ciclo.horasEnCiclo} / {ciclo.intervalo} h
-                            </span>
-                            <span className="font-mono text-muted-foreground">
-                              {ciclo.porcentajeCiclo}%
-                            </span>
-                          </div>
-                          <Progress
-                            value={ciclo.porcentajeCiclo}
-                            aria-label={`Avance de ciclo para ${equipo.codigo}: ${ciclo.porcentajeCiclo}%`}
-                            className={`mt-1.5 h-2 [&_[data-slot=progress-indicator]]:duration-500 [&_[data-slot=progress-indicator]]:ease-out ${
-                              equipo.requiereMantenimiento
-                                ? 'bg-alert-border/40 [&_[data-slot=progress-indicator]]:bg-destructive'
-                                : '[&_[data-slot=progress-indicator]]:bg-primary'
-                            }`}
-                          />
-                          <p className="mt-1.5 text-xs text-muted-foreground">
-                            Último servicio: {ciclo.ultimoHorometro} h (
-                            {formatFecha(ciclo.fechaUltimoMantenimiento)})
-                          </p>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-1.5">
-                          <Badge variant="secondary">
-                            Historial: {equipo.mantenimientos?.length ?? 0} servicios
-                          </Badge>
-                        </div>
-                      </CardContent>
-
-                      <CardFooter className="flex-wrap gap-2 border-t px-4 pt-3">
-                        <RegistrarMantenimientoButton
-                          equipo={equipo}
-                          onRegisterMantenimiento={onRegisterMantenimiento}
-                        />
-                        <MantenimientoHistoryDialog equipo={equipo} />
-                        <EquipoEditDialog equipo={equipo} onUpdate={onUpdate} />
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setEquipoToDelete(equipo)}
-                          disabled={deletingId === equipo.id}
-                          aria-label={`Eliminar equipo ${equipo.codigo}`}
-                        >
-                          <Trash2 aria-hidden="true" />
-                          <span>{deletingId === equipo.id ? 'Eliminando...' : 'Eliminar'}</span>
-                        </Button>
-                      </CardFooter>
-                    </Card>
-                  );
-                })
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    );
+                  })
                 )}
               </div>
             </>

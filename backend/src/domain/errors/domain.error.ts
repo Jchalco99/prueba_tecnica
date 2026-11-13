@@ -25,3 +25,15 @@ export class ConflictError extends AppError {
     super(message, 409);
   }
 }
+
+export class UnauthorizedError extends AppError {
+  constructor(message = 'No autorizado. Inicia sesión para continuar.') {
+    super(message, 401);
+  }
+}
+
+export class ForbiddenError extends AppError {
+  constructor(message = 'No tienes permisos para realizar esta acción.') {
+    super(message, 403);
+  }
+}

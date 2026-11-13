@@ -45,14 +45,23 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 
 ## Endpoints del Backend
 
-| Método | Ruta | Descripción |
-| :--- | :--- | :--- |
-| `GET` | `/health` | Health check (`200 OK` → `{ "status": "ok" }`) |
-| `GET` | `/equipos` | Lista todos los equipos con `mantenimientos` y `requiereMantenimiento` |
-| `POST` | `/equipos` | Crea un equipo (`{ "codigo": "CAM-01", "tipo": "CAMION", "horometro": 0 }`) |
-| `PUT` | `/equipos/:id` | Actualiza datos u horómetro de un equipo (`{ "horometro": 520 }`) |
-| `DELETE` | `/equipos/:id` | Elimina un equipo y su historial en cascada |
-| `POST` | `/equipos/:id/mantenimientos` | Registra mantenimiento (toma `horometroActual` del body o el `horometro` actual del equipo) |
+| Método | Ruta | Protección | Descripción |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/health` | Pública | Health check (`200 OK` -> `{ "status": "ok" }`) |
+| `POST` | `/auth/register` | Pública | Registra un nuevo usuario (`role: USER`) y retorna `{ token, user }` |
+| `POST` | `/auth/login` | Pública | Inicia sesión con correo y contraseña y retorna `{ token, user }` |
+| `GET` | `/auth/me` | JWT Bearer | Retorna los datos del usuario autenticado (`{ user }`) |
+| `GET` | `/equipos` | JWT Bearer | Lista todos los equipos si es `ADMIN`, o únicamente los del usuario si es `USER` |
+| `POST` | `/equipos` | JWT Bearer | Crea un equipo asociado al usuario autenticado |
+| `PUT` | `/equipos/:id` | JWT Bearer | Actualiza datos u horómetro del equipo (solo propietario o `ADMIN`) |
+| `DELETE` | `/equipos/:id` | JWT Bearer | Elimina un equipo y su historial en cascada (solo propietario o `ADMIN`) |
+| `POST` | `/equipos/:id/mantenimientos` | JWT Bearer | Registra mantenimiento para el equipo (solo propietario o `ADMIN`) |
+
+### Cuenta Administrador preconfigurada
+
+- **Correo:** `admin@minera.com`
+- **Contraseña:** `admin123`
+- **Rol:** `ADMIN` (lista y gestiona todos los equipos registrados en el sistema)
 
 ## URLs Públicas
 
@@ -63,6 +72,8 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 ## Estado de Avance
 
 - [x] Configuración de Prisma 7 y migración inicial (`Equipo`, `Mantenimiento`, `TipoEquipo`)
+- [x] Sistema de Autenticación con JWT y tabla `Users` con roles (`USER` y `ADMIN`)
+- [x] Aislamiento de equipos por usuario y vista global de supervisión para administradores
 - [x] Estructura Clean Architecture en Backend y Feature-Sliced Design en Frontend
 - [x] Implementación completa de endpoints REST y lógica de mantenimiento en Backend
 - [x] Implementación de la interfaz en Frontend (React + TypeScript + shadcn/ui + TailwindCSS)
@@ -75,10 +86,10 @@ $$\text{requiereMantenimiento} = \text{horometro} \ge (\text{horometroUltimoMant
 ```bash
 cd backend
 cp .env.example .env
-# Ajustar DATABASE_URL en .env si es necesario
+# Ajustar DATABASE_URL y JWT_SECRET en .env si es necesario
 npm install
-npx prisma migrate dev
-npx prisma generate
+npm run prisma:deploy
+npm run prisma:generate
 npm run dev
 ```
 
@@ -87,20 +98,28 @@ El servidor quedará disponible en `http://localhost:3000`.
 ### 2. Pruebas rápidas de endpoints
 
 ```bash
-# Health check
+# 1. Health check
 curl http://localhost:3000/health
 
-# Crear un camión con 500 horas (requiereMantenimiento = true)
+# 2. Iniciar sesión como Administrador para obtener el JWT
+curl -X POST http://localhost:3000/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@minera.com","password":"admin123"}'
+
+# 3. Crear un equipo con el token Bearer obtenido
 curl -X POST http://localhost:3000/equipos \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN_JWT>" \
   -d '{"codigo":"CAM-001","tipo":"CAMION","horometro":500}'
 
-# Listar equipos
-curl http://localhost:3000/equipos
+# 4. Listar equipos (el admin verá todos los equipos; un usuario normal solo los suyos)
+curl http://localhost:3000/equipos \
+  -H "Authorization: Bearer <TOKEN_JWT>"
 
-# Registrar mantenimiento (reinicia el ciclo -> requiereMantenimiento = false)
+# 5. Registrar mantenimiento (reinicia el ciclo preventivo)
 curl -X POST http://localhost:3000/equipos/1/mantenimientos \
   -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <TOKEN_JWT>" \
   -d '{}'
 ```
 
